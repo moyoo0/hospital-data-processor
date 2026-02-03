@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>工作台 - 医院数据处理中心</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .main-container {
+            padding: 3rem 0;
+        }
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            transition: all 0.3s;
+            height: 100%;
+            background: white;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        .card-icon {
+            font-size: 3rem;
+            margin-bottom: 1.5rem;
+            color: #3498db;
+        }
+        .btn-action {
+            border-radius: 30px;
+            padding: 8px 25px;
+        }
+        .download-area {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #e8f5e9;
+            border-radius: 10px;
+            border: 1px solid #c8e6c9;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 导航栏 -->
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="#3498db" class="bi bi-hospital me-2" viewBox="0 0 16 16">
+                    <path d="M8.5 5.034v1.1l.953-.55.5.867L9 7l.953.55-.5.866-.953-.55v1.1h-1v-1.1l-.953.55-.5-.866L7 7l-.953-.55.5-.866.953.55v-1.1h1ZM13.25 9a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5ZM13 11.25a.25.25 0 0 1 .25-.25h.5a.25.25 0 0 1 .25.25v.5a.25.25 0 0 1-.25.25h-.5a.25.25 0 0 1-.25-.25v-.5Zm.25 1.75a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5Zm-11-4a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 3 9.75v-.5A.25.25 0 0 0 2.75 9h-.5Zm0 2.25a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5A.25.25 0 0 0 3 12v-.5A.25.25 0 0 0 2.75 11.25h-.5Zm0 2.25a.25.25 0 0 0-.25.25v.5c0 .138.112.25.25.25h.5a.25.25 0 0 0 .25-.25v-.5a.25.25 0 0 0-.25-.25h-.5Z"/>
+                    <path d="M5 0a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v3a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1V0Zm2 4h2V1H7v3Zm3 9v-8.5a.5.5 0 0 0-.5-.5h-5a.5.5 0 0 0-.5.5V13h6Z"/>
+                </svg>
+                医院数据处理中心
+            </a>
+        </div>
+    </nav>
+
+    <!-- 主内容区 -->
+    <div class="container main-container">
+        <div class="row g-4">
+            
+            <!-- 功能 1: 单文件处理 -->
+            <div class="col-md-6">
+                <div class="card feature-card p-4">
+                    <div class="card-body text-center">
+                        <div class="card-icon">📄</div>
+                        <h3 class="card-title">单文件处理</h3>
+                        <p class="card-text text-muted mb-4">
+                            上传单个 Excel 源文件，系统将自动清洗数据、进行分组计算，并生成带有制表信息的标准化报表。
+                        </p>
+                        <button class="btn btn-primary btn-action" data-bs-toggle="modal" data-bs-target="#processModal">
+                            上传文件
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 功能 2: 批量合并 -->
+            <div class="col-md-6">
+                <div class="card feature-card p-4">
+                    <div class="card-body text-center">
+                        <div class="card-icon">📑</div>
+                        <h3 class="card-title">批量合并</h3>
+                        <p class="card-text text-muted mb-4">
+                            一次性上传多个月份或科室的 Excel 文件，系统将智能对齐表头并合并数据，生成汇总报表。
+                        </p>
+                        <button class="btn btn-success btn-action" data-bs-toggle="modal" data-bs-target="#mergeModal">
+                            批量上传
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- 模态框 1: 单文件处理 -->
+    <div class="modal fade" id="processModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">单文件处理</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="processForm">
+                        <div class="mb-3">
+                            <label class="form-label">选择 Excel 文件</label>
+                            <input type="file" class="form-control" id="srcFile" accept=".xls,.xlsx">
+                            <div class="form-text">支持 .xls 和 .xlsx 格式</div>
+                        </div>
+                        
+                        <!-- 下载区域 -->
+                        <div id="processDownloadArea" class="download-area text-center">
+                            <p class="mb-2 text-success fw-bold">✅ 处理成功！</p>
+                            <a href="#" id="processDownloadBtn" class="btn btn-sm btn-outline-success">
+                                ⬇️ 下载结果文件
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary" onclick="submitProcess()">开始处理</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 模态框 2: 批量合并 -->
+    <div class="modal fade" id="mergeModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">批量合并</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="mergeForm">
+                        <div class="mb-3">
+                            <label class="form-label">选择多个文件</label>
+                            <input type="file" class="form-control" id="mergeFiles" multiple accept=".xls,.xlsx">
+                            <div class="form-text">按住 Ctrl 或 Shift 可多选，支持 .xls 和 .xlsx</div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">自定义输出文件名 (可选)</label>
+                            <input type="text" class="form-control" id="outputFilename" placeholder="例如: 2025第一季度汇总">
+                        </div>
+
+                        <!-- 下载区域 -->
+                        <div id="mergeDownloadArea" class="download-area text-center">
+                            <p class="mb-2 text-success fw-bold">✅ 合并成功！</p>
+                            <a href="#" id="mergeDownloadBtn" class="btn btn-sm btn-outline-success">
+                                ⬇️ 下载汇总文件
+                            </a>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-success" onclick="submitMerge()">开始合并</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast 提示框 -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="liveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle">提示</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toastBody">
+                操作成功！
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 初始化：监听模态框关闭，重置表单和下载区
+        const modals = document.querySelectorAll('.modal');
+        modals.forEach(modal => {
+            modal.addEventListener('hidden.bs.modal', event => {
+                const form = modal.querySelector('form');
+                if(form) form.reset();
+                const downloadArea = modal.querySelector('.download-area');
+                if(downloadArea) downloadArea.style.display = 'none';
+                
+                // 重置按钮状态
+                const btn = modal.querySelector('.modal-footer button:last-child');
+                if(btn) {
+                    btn.disabled = false;
+                    btn.textContent = btn.classList.contains('btn-success') ? '开始合并' : '开始处理';
+                }
+            });
+        });
+
+        function showToast(message, type = 'success') {
+            const toastEl = document.getElementById('liveToast');
+            const toastBody = document.getElementById('toastBody');
+            const toastTitle = document.getElementById('toastTitle');
+            
+            toastBody.textContent = message;
+            if (type === 'success') {
+                toastEl.classList.remove('text-bg-danger');
+                toastEl.classList.add('text-bg-success');
+                toastTitle.textContent = "成功";
+            } else {
+                toastEl.classList.remove('text-bg-success');
+                toastEl.classList.add('text-bg-danger');
+                toastTitle.textContent = "错误";
+            }
+            
+            const toast = new bootstrap.Toast(toastEl);
+            toast.show();
+        }
+
+        // 提交单文件处理
+        async function submitProcess() {
+            const fileInput = document.getElementById('srcFile');
+            const downloadArea = document.getElementById('processDownloadArea');
+            const downloadBtn = document.getElementById('processDownloadBtn');
+            
+            if (fileInput.files.length === 0) {
+                showToast("请先选择一个文件", 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            const btn = document.querySelector('#processModal .btn-primary');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '处理中...';
+            downloadArea.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/process_data', {
+                    method: 'POST',
+                    body: formData // 自动设置 Content-Type 为 multipart/form-data
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    // 显示下载链接
+                    downloadBtn.href = data.download_url;
+                    downloadBtn.textContent = "⬇️ 下载: " + data.filename;
+                    downloadArea.style.display = 'block';
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (error) {
+                showToast("请求失败: " + error, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // 提交批量合并
+        async function submitMerge() {
+            const fileInput = document.getElementById('mergeFiles');
+            const outputFilename = document.getElementById('outputFilename').value;
+            const downloadArea = document.getElementById('mergeDownloadArea');
+            const downloadBtn = document.getElementById('mergeDownloadBtn');
+
+            if (fileInput.files.length === 0) {
+                showToast("请至少选择一个文件", 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            for (const file of fileInput.files) {
+                formData.append('files', file);
+            }
+            if (outputFilename) {
+                formData.append('output_filename', outputFilename);
+            }
+
+            const btn = document.querySelector('#mergeModal .btn-success');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '合并中...';
+            downloadArea.style.display = 'none';
+
+            try {
+                const response = await fetch('/api/merge_files', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                if (response.ok) {
+                    showToast(data.message, 'success');
+                    // 显示下载链接
+                    downloadBtn.href = data.download_url;
+                    downloadBtn.textContent = "⬇️ 下载: " + data.filename;
+                    downloadArea.style.display = 'block';
+                } else {
+                    showToast(data.error, 'error');
+                }
+            } catch (error) {
+                showToast("请求失败: " + error, 'error');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+    </script>
+</body>
+</html>
