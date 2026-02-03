@@ -19,7 +19,7 @@ COPY . .
 RUN mkdir -p temp_uploads temp_downloads
 
 # 暴露端口
-EXPOSE 5000
+EXPOSE 5010
 
 # 启动命令
-CMD ["python", "app.py"]
+CMD ["python", "run.py"]
