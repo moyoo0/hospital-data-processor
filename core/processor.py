@@ -3,44 +3,22 @@ import os
 from openpyxl.utils import get_column_letter
 from openpyxl.styles import Alignment
 
-def process_hospital_data(src_file='excels/data_export/全院收入_按科室202503门诊-开单科室.xls', 
-                          output_file='excels/data_aggregation/全院收入_按科室202503门诊-开单科室_带合并.xlsx'):
-    # 1. 硬编码分组映射规则
-    # 合计列定义 (组ID -> 合计显示名称)
-    GROUP_SUMMARIES = {
-        "01": "医疗服务性收入合计",
-        "02": "中医医疗服务性收入合计",
-        "03": "检查收入合计",
-        "04": "西成药收入合计",
-        "05": "中草药合计",
-        "06": "材料费合计",
-        "07": "其他收入合计"
-    }
+from core.config_loader import get_processor_config, parse_group_config
 
-    # 明细项归属映射 (明细列名 -> 组ID 1-7)
-    ITEM_TO_GROUP_ID = {
-        # 组 1
-        '产科手术': 1, '肠镜下电切术': 1, '穿刺': 1, '妇科手术': 1, '骨科处置费': 1, '挂号费': 1, 
-        '护理费': 1, '会诊费': 1, '监护病房费': 1, '接生费': 1, '介入治疗': 1, '康复治疗': 1, 
-        '麻醉费': 1, '母婴同室费': 1, '其他费': 1, '手术费': 1, '手术仪器费': 1, '碎石费': 1, 
-        '特殊器械': 1, '胃镜下电切术': 1, '五官处置费': 1, '五官手术费': 1, '五官治疗费': 1, 
-        '镶牙': 1, '血液透析': 1, '氧气费': 1, '院前急救费': 1, '诊查费': 1, '诊疗费': 1, 
-        '镇疼费': 1, '治疗费': 1, '住院费': 1, '注射费': 1,
-        # 组 2
-        '煎药费': 2, '理疗费': 2, '针灸费': 2, '中医治疗费': 2,
-        # 组 3
-        'B超费': 3, 'CT费': 3, 'DR费': 3, '病理费': 3, '查体费': 3, '磁共振费': 3, '多普勒': 3, 
-        '放射费': 3, '高压氧': 3, '化验费': 3, '检查费': 3, '结肠镜': 3, '脑电图': 3, '特检费': 3, 
-        '胃肠透视': 3, '胃镜费': 3, '心电图': 3, '支气管镜检查': 3,
-        # 组 4
-        '西药费': 4, '疫苗费': 4, '中成药': 4,
-        # 组 5
-        '中草药': 5,
-        # 组 6
-        '材料费': 6, '接种服务材料费': 6, '手术材料费': 6,
-        # 组 7
-        '病历复印费': 7, '工本费': 7, '血费': 7
-    }
+def process_hospital_data(src_file='excels/data_export/全院收入_按科室202503门诊-开单科室.xls', 
+                          output_file='excels/data_aggregation/全院收入_按科室202503门诊-开单科室_带合并.xlsx',
+                          custom_config=None):
+    # 1. 确定分组映射规则
+    if custom_config:
+        print("使用用户自定义分组配置...")
+        GROUP_SUMMARIES, ITEM_TO_GROUP_ID = parse_group_config(custom_config)
+    else:
+        print("使用默认分组配置...")
+        GROUP_SUMMARIES, ITEM_TO_GROUP_ID = get_processor_config()
+
+    if not GROUP_SUMMARIES or not ITEM_TO_GROUP_ID:
+         print("错误: 分组配置为空或无效。")
+         return False
 
     print(f"正在读取源文件: {src_file}")
     if not os.path.exists(src_file):
