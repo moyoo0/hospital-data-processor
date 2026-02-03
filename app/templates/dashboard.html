@@ -104,7 +104,7 @@
 
     <!-- 模态框 1: 单文件处理 -->
     <div class="modal fade" id="processModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-dialog-centered modal-lg"> <!-- modal-lg specifically for config editor -->
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title">单文件处理</h5>
@@ -116,6 +116,26 @@
                             <label class="form-label">选择 Excel 文件</label>
                             <input type="file" class="form-control" id="srcFile" accept=".xls,.xlsx">
                             <div class="form-text">支持 .xls 和 .xlsx 格式</div>
+                        </div>
+
+                        <!-- 高级设置: 分组配置 -->
+                        <div class="accordion mb-3" id="accordionConfig">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingConfig">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseConfig">
+                                        ⚙️ 高级设置：分组映射规则
+                                    </button>
+                                </h2>
+                                <div id="collapseConfig" class="accordion-collapse collapse" data-bs-parent="#accordionConfig">
+                                    <div class="accordion-body">
+                                        <div class="mb-2 d-flex justify-content-between align-items-center">
+                                            <small class="text-muted">修改下方的 JSON 配置可临时调整分组逻辑。</small>
+                                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="loadDefaultConfig()">重置默认</button>
+                                        </div>
+                                        <textarea class="form-control" id="configEditor" rows="12" style="font-family: monospace; font-size: 0.85rem; background-color: #f8f9fa;"></textarea>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         
                         <!-- 下载区域 -->
@@ -187,6 +207,27 @@
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
+        // 初始化：加载配置
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDefaultConfig();
+        });
+
+        // 加载默认配置
+        async function loadDefaultConfig() {
+            try {
+                const response = await fetch('/api/config');
+                if (response.ok) {
+                    const config = await response.json();
+                    document.getElementById('configEditor').value = JSON.stringify(config, null, 4);
+                } else {
+                    console.error("Failed to load default config");
+                    document.getElementById('configEditor').value = "// 加载失败，请检查服务器日志";
+                }
+            } catch (e) {
+                console.error("Error fetching config:", e);
+            }
+        }
+
         // 初始化：监听模态框关闭，重置表单和下载区
         const modals = document.querySelectorAll('.modal');
         modals.forEach(modal => {
@@ -196,6 +237,11 @@
                 const downloadArea = modal.querySelector('.download-area');
                 if(downloadArea) downloadArea.style.display = 'none';
                 
+                // 重置配置编辑器为默认值 (如果用户修改过，这里最好重置回去)
+                if (modal.id === 'processModal') {
+                    loadDefaultConfig(); // 每次关闭重新加载默认值，确保"临时修改"只生效一次
+                }
+
                 // 重置按钮状态
                 const btn = modal.querySelector('.modal-footer button:last-child');
                 if(btn) {
@@ -228,6 +274,7 @@
         // 提交单文件处理
         async function submitProcess() {
             const fileInput = document.getElementById('srcFile');
+            const configEditor = document.getElementById('configEditor');
             const downloadArea = document.getElementById('processDownloadArea');
             const downloadBtn = document.getElementById('processDownloadBtn');
             
@@ -236,8 +283,18 @@
                 return;
             }
 
+            // 验证 JSON 格式
+            let configVal = configEditor.value;
+            try {
+                JSON.parse(configVal);
+            } catch (e) {
+                showToast("配置格式错误: 请确保 JSON 格式正确", 'error');
+                return;
+            }
+
             const formData = new FormData();
             formData.append('file', fileInput.files[0]);
+            formData.append('config', configVal);
 
             const btn = document.querySelector('#processModal .btn-primary');
             const originalText = btn.textContent;
@@ -271,6 +328,7 @@
 
         // 提交批量合并
         async function submitMerge() {
+
             const fileInput = document.getElementById('mergeFiles');
             const outputFilename = document.getElementById('outputFilename').value;
             const downloadArea = document.getElementById('mergeDownloadArea');

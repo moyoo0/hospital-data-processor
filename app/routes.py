@@ -1,9 +1,11 @@
 import os
 import uuid
 import shutil
+import json
 from flask import request, jsonify, render_template, send_from_directory
 from core.processor import process_hospital_data
 from core.merger import merge_excel_files
+from core.config_loader import load_group_config
 
 def register_routes(app):
     # 配置从 app 对象获取（假设在 app.py 中定义）
@@ -17,6 +19,14 @@ def register_routes(app):
     @app.route('/dashboard')
     def dashboard():
         return render_template('dashboard.html')
+    
+    @app.route('/api/config', methods=['GET'])
+    def get_config():
+        config = load_group_config()
+        if config:
+            return jsonify(config), 200
+        else:
+            return jsonify({"error": "Unable to load default config"}), 500
 
     @app.route('/api/download/<path:filename>')
     def download_file(filename):
@@ -31,6 +41,14 @@ def register_routes(app):
         if file.filename == '':
             return jsonify({"error": "No selected file"}), 400
 
+        # 获取用户自定义配置 (JSON 字符串)
+        custom_config = None
+        if 'config' in request.form:
+            try:
+                custom_config = json.loads(request.form['config'])
+            except json.JSONDecodeError:
+                return jsonify({"error": "Invalid JSON in config"}), 400
+
         task_id = str(uuid.uuid4())
         task_upload_dir = os.path.join(UPLOAD_FOLDER, task_id)
         os.makedirs(task_upload_dir, exist_ok=True)
@@ -42,7 +60,11 @@ def register_routes(app):
         output_path = os.path.join(DOWNLOAD_FOLDER, output_filename)
 
         try:
-            success = process_hospital_data(src_file=src_path, output_file=output_path)
+            success = process_hospital_data(
+                src_file=src_path, 
+                output_file=output_path,
+                custom_config=custom_config
+            )
             shutil.rmtree(task_upload_dir, ignore_errors=True)
             
             if success:
@@ -54,6 +76,7 @@ def register_routes(app):
             else:
                 return jsonify({"error": "数据处理失败"}), 500
         except Exception as e:
+            shutil.rmtree(task_upload_dir, ignore_errors=True) # 确保清理
             return jsonify({"error": str(e)}), 500
 
     @app.route('/api/merge_files', methods=['POST'])
