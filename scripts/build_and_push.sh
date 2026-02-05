@@ -2,7 +2,7 @@
 
 # 配置
 IMAGE_NAME="moyoo0/hospital-data-app"
-TAG="v2.1"
+TAG="v2.2"
 
 echo "开始构建并推送 Docker 镜像: ${IMAGE_NAME}:${TAG}..."
 
