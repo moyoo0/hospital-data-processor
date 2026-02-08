@@ -58,8 +58,11 @@ def process_hospital_data(src_file='excels/data_export/全院收入_按科室202
 
     for col in detail_cols:
         # 获取该列所属组，没找到则默认归入 7 (其他)
-        gid = ITEM_TO_GROUP_ID.get(col.strip(), 7)
-        group_sums[gid] += pd.to_numeric(df_src[col], errors='coerce').fillna(0)
+        gids = ITEM_TO_GROUP_ID.get(col.strip(), [7])
+        col_values = pd.to_numeric(df_src[col], errors='coerce').fillna(0)
+        for gid in gids:
+            if gid in group_sums:
+                group_sums[gid] += col_values
 
     # 3. 构造输出数据框
     # 顺序：科室 | 合计 | 01合计 | ... | 07合计 | 明细...
@@ -86,7 +89,9 @@ def process_hospital_data(src_file='excels/data_export/全院收入_按科室202
     for gid in range(1, 8):
         header_row_0.append(str(gid).zfill(2))
     for col in detail_cols:
-        header_row_0.append(ITEM_TO_GROUP_ID.get(col.strip(), 7))
+        gids = ITEM_TO_GROUP_ID.get(col.strip(), [7])
+        # 如果有多个 ID，用 / 连接显示在表头
+        header_row_0.append("/".join(map(str, gids)) if isinstance(gids, list) else gids)
 
     # 第二行：列名
     header_row_1 = df_final.columns.tolist()

@@ -37,7 +37,9 @@ def parse_group_config(config_data):
         group_summaries[gid_str] = group['name']
         
         for item in group.get('items', []):
-            item_to_group_id[item] = gid_int
+            if item not in item_to_group_id:
+                item_to_group_id[item] = []
+            item_to_group_id[item].append(gid_int)
             
     return group_summaries, item_to_group_id
 
