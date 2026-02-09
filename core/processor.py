@@ -25,19 +25,32 @@ def process_hospital_data(src_file='excels/data_export/全院收入_按科室202
         print(f"错误: 源文件不存在 {src_file}")
         return False
 
-    # 源文件表头在第 4 行 (index 3)
-    try:
-        df_src = pd.read_excel(src_file, header=3)
-    except Exception as e:
-        print(f"读取 Excel 失败: {e}")
+    # 自动探测表头行 (尝试前 6 行)
+    df_src = None
+    header_idx = None
+    for i in range(6):
+        try:
+            temp_df = pd.read_excel(src_file, header=i, nrows=1)
+            temp_cols = [str(c).strip() for c in temp_df.columns]
+            if '合计' in temp_cols:
+                header_idx = i
+                df_src = pd.read_excel(src_file, header=i)
+                break
+        except:
+            continue
+            
+    if df_src is None:
+        print(f"错误: 无法在源文件中识别表头（未找到'合计'列）。")
         return False
+    
+    print(f"自动识别表头行: 第 {header_idx + 1} 行")
     
     # 清洗列名：去除前后空格
     df_src.columns = df_src.columns.astype(str).str.strip()
     
-    # 动态识别科室列名 (可能是 '开单科室'、'执行科室' 或 '病人所在病区')
+    # 动态识别科室列名
     dept_col = None
-    for col in ['开单科室', '执行科室', '病人所在病区']:
+    for col in ['开单科室', '执行科室', '病人所在病区', '病人所在']:
         if col in df_src.columns:
             dept_col = col
             break
